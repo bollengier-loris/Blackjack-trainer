@@ -29,9 +29,9 @@
   function cardHTML(card,o){
     o=o||{};
     if(o.back) return '<div class="card back"></div>';
-    var red=RED[card.suit]?' red':'', mini=o.mini?' mini':'', deal=o.deal?' deal':'';
+    var red=RED[card.suit]?' red':'', size=o.mini?' mini':o.cnt?' cnt':'', deal=o.deal?' deal':'';
     var r=rankText(card.rank), s=card.suit;
-    return '<div class="card'+red+mini+deal+'">'+
+    return '<div class="card'+red+size+deal+'">'+
       '<div class="c-r">'+r+'<div class="c-s">'+s+'</div></div>'+
       '<div class="c-mid">'+s+'</div>'+
       '<div class="br"><div class="c-r">'+r+'<div class="c-s">'+s+'</div></div></div></div>';
@@ -70,6 +70,17 @@
     box.onclick=function(e){ var b=e.target.closest('button'); if(!b) return;
       box.querySelectorAll('button').forEach(function(x){x.classList.remove('on');});
       b.classList.add('on'); cb(b.getAttribute('data-v')); };
+  }
+  function toggleBtns(name,items){
+    return '<div class="seg" data-toggles="'+name+'">'+items.map(function(it){
+      return '<button data-k="'+it.k+'" data-label="'+it.label+'" class="'+(it.on?'on':'')+'">'+it.label+(it.on?' \u2713':'')+'</button>';
+    }).join('')+'</div>';
+  }
+  function wireToggles(name,cb){
+    var box=$('[data-toggles="'+name+'"]'); if(!box) return;
+    box.onclick=function(e){ var b=e.target.closest('button'); if(!b) return;
+      var on=!b.classList.contains('on'); b.classList.toggle('on',on);
+      b.textContent=b.getAttribute('data-label')+(on?' \u2713':''); cb(b.getAttribute('data-k'),on); };
   }
   function stepper(name,val){
     return '<div class="stepper" data-step="'+name+'"><button data-d="-1">\u2212</button><div class="v">'+val+'</div><button data-d="1">+</button></div>';
@@ -112,9 +123,7 @@
     mount(topbar('Mode','Strat\u00e9gie de base')+
       '<div class="scroll"><div class="wrap"><div class="panel-card">'+
       '<div class="field"><label>Cat\u00e9gories \u00e0 r\u00e9viser</label>'+
-      seg('cats-hard',[{v:'on',l:'Hard \u2713'},{v:'off',l:'Hard'}],t.hard?'on':'off')+'<div style="height:8px"></div>'+
-      seg('cats-soft',[{v:'on',l:'Soft \u2713'},{v:'off',l:'Soft'}],t.soft?'on':'off')+'<div style="height:8px"></div>'+
-      seg('cats-pairs',[{v:'on',l:'Paires \u2713'},{v:'off',l:'Paires'}],t.pairs?'on':'off')+
+      toggleBtns('cats',[{k:'hard',label:'Hard',on:t.hard},{k:'soft',label:'Soft',on:t.soft},{k:'pairs',label:'Paires',on:t.pairs}])+
       '<div class="hint">L\u2019abandon (early surrender) est toujours une r\u00e9ponse possible.</div></div>'+
       '<div class="field"><label>Nombre de questions</label>'+
       seg('tcount',[{v:'20',l:'20'},{v:'50',l:'50'},{v:'all',l:'Toutes'}],String(t.count))+'</div>'+
@@ -123,9 +132,7 @@
       '<div class="hint">Modifie certaines d\u00e9cisions de split (cases Y/N).</div></div>'+
       '</div><button class="bigbtn" id="start">Commencer</button></div></div>');
     wireBack(home);
-    wireSeg('cats-hard',function(v){t.hard=v==='on';saveSettings();});
-    wireSeg('cats-soft',function(v){t.soft=v==='on';saveSettings();});
-    wireSeg('cats-pairs',function(v){t.pairs=v==='on';saveSettings();});
+    wireToggles('cats',function(k,on){t[k]=on;saveSettings();});
     wireSeg('tcount',function(v){t.count=v==='all'?'all':Number(v);saveSettings();});
     wireSeg('das',function(v){settings.das=v==='on';saveSettings();});
     $('#start').onclick=function(){ if(!t.hard&&!t.soft&&!t.pairs){alert('Choisis au moins une cat\u00e9gorie.');return;} trainerStart(); };
@@ -266,9 +273,10 @@
     mount(topbar('Comptage','Manche <span id="rno">0</span>','<button class="iconbtn" id="pause">\u2759\u2759</button>')+
       '<div style="height:4px;background:rgba(255,255,255,.06)"><div id="tray" style="height:100%;width:0;background:var(--brass)"></div></div>'+
       '<div class="table">'+
+      '<div id="cardszone" style="flex:1;display:flex;flex-direction:column">'+
       '<div class="zone"><span class="ztag">Croupier</span><div class="minihand" id="seat-D"></div></div>'+
       '<div style="flex:1"></div>'+
-      '<div class="seats" id="seats">'+seats+'</div>'+
+      '<div class="seats" id="seats">'+seats+'</div></div>'+
       '<div class="actionbar" style="grid-template-columns:1fr 1fr"><button class="act" id="stop">Arr\u00eater</button><button class="act brass" id="resume" style="display:none">Reprendre</button></div></div>');
     wireBack(function(){ if(confirm('Quitter le sabot ?')){ stopT(); home(); } });
     $('#pause').onclick=togglePause; $('#resume').onclick=togglePause;
@@ -291,7 +299,7 @@
         var dh=document.querySelector('#seat-D'); if(dh)dh.innerHTML=''; }
       var box=document.querySelector('#seat-'+e.seat+(e.seat==='D'?'':' .minihand'));
       if(e.seat==='D') box=document.querySelector('#seat-D');
-      if(box) box.insertAdjacentHTML('beforeend',cardHTML(e.card,{mini:true,deal:true}));
+      if(box) box.insertAdjacentHTML('beforeend',cardHTML(e.card,{cnt:true,deal:true}));
       CT.shown++; var tr=document.querySelector('#tray'); if(tr) tr.style.width=(100*CT.shown/CT.total)+'%';
       CT.timer=setTimeout(countPlay,settings.count.speedMs);
     } else { // round end
@@ -303,33 +311,40 @@
       else CT.timer=setTimeout(countPlay,Math.max(250,settings.count.speedMs));
     }
   }
+  function setCardsHidden(h){ var z=document.querySelector('#cardszone'); if(z) z.style.visibility=h?'hidden':'visible'; }
+  function countInput(label,id,val){
+    return '<div class="countin"><label>'+label+'</label>'+
+      '<button class="cstep" data-for="'+id+'" data-d="-1">\u2212</button>'+
+      '<input class="cnum" id="'+id+'" type="number" inputmode="numeric" value="'+val+'">'+
+      '<button class="cstep" data-for="'+id+'" data-d="1">+</button></div>';
+  }
   function countAsk(isFinal,rc,cardsLeft){
-    stopT();
+    stopT(); setCardsHidden(true);
     var c=settings.count, wantRc=(c.ask==='rc'||c.ask==='both'), wantTc=(c.ask==='tc'||c.ask==='both');
     var decksRem=Math.max(0.5,Math.round((cardsLeft/52)*2)/2), tcReal=Math.round(rc/decksRem);
+    var startRc=(CT.lastRc!=null?CT.lastRc:0), startTc=(CT.lastTc!=null?CT.lastTc:0);
     askEl.style.display='flex';
     askEl.innerHTML='<h3>'+(isFinal?'Fin du sabot':'Quel est le compte ?')+'</h3>'+
-      '<p>'+(isFinal?'Donne le compte final.':'Manche termin\u00e9e \u2014 \u00e0 toi.')+'</p>'+
-      (wantRc?'<div class="countin"><label>Running</label><div class="stepper" data-step="qrc"><button data-d="-1">\u2212</button><div class="v" id="vrc">0</div><button data-d="1">+</button></div></div>':'')+
-      (wantTc?'<div class="countin"><label>True</label><div class="stepper" data-step="qtc"><button data-d="-1">\u2212</button><div class="v" id="vtc">0</div><button data-d="1">+</button></div></div>':'')+
+      '<p>'+(isFinal?'Donne le compte final.':'Cartes cach\u00e9es \u2014 \u00e0 toi.')+'</p>'+
+      (wantRc?countInput('Running','qrc',startRc):'')+
+      (wantTc?countInput('True','qtc',startTc):'')+
       '<button class="bigbtn" id="valid" style="margin-top:8px">Valider</button>';
-    var qrc=0,qtc=0;
-    function bindStep(sel,get,set){ var b=askEl.querySelector(sel); if(!b)return;
-      b.onclick=function(e){ var bt=e.target.closest('button'); if(!bt)return; set(get()+Number(bt.getAttribute('data-d'))); b.querySelector('.v').textContent=get(); }; }
-    bindStep('[data-step="qrc"]',function(){return qrc;},function(x){qrc=x;});
-    bindStep('[data-step="qtc"]',function(){return qtc;},function(x){qtc=x;});
+    askEl.querySelectorAll('.cstep').forEach(function(b){
+      b.onclick=function(){ var inp=askEl.querySelector('#'+b.getAttribute('data-for')); var v=parseInt(inp.value,10); if(isNaN(v))v=0; inp.value=v+Number(b.getAttribute('data-d')); };
+    });
+    function rd(id,def){ var inp=askEl.querySelector('#'+id); if(!inp)return def; var v=parseInt(inp.value,10); return isNaN(v)?def:v; }
     askEl.querySelector('#valid').onclick=function(){
-      var rcOk=true,tcOk=true,lines=[];
-      if(wantRc){ rcOk=(qrc===rc); CT.checks.rc[1]++; if(rcOk)CT.checks.rc[0]++; lines.push('Running r\u00e9el : '+(rc>=0?'+':'')+rc); }
-      if(wantTc){ tcOk=Math.abs(qtc-tcReal)<=1; CT.checks.tc[1]++; if(tcOk)CT.checks.tc[0]++; lines.push('True r\u00e9el : '+(tcReal>=0?'+':'')+tcReal+' (RC '+(rc>=0?'+':'')+rc+' \u00f7 ~'+decksRem.toFixed(1).replace('.',',')+' jeux)'); }
-      askEl.style.display='none';
+      var qrc=rd('qrc',startRc), qtc=rd('qtc',startTc), rcOk=true,tcOk=true,lines=[];
+      if(wantRc){ rcOk=(qrc===rc); CT.checks.rc[1]++; if(rcOk)CT.checks.rc[0]++; CT.lastRc=rc; lines.push('Running r\u00e9el : '+(rc>=0?'+':'')+rc); }
+      if(wantTc){ tcOk=Math.abs(qtc-tcReal)<=1; CT.checks.tc[1]++; if(tcOk)CT.checks.tc[0]++; CT.lastTc=tcReal; lines.push('True r\u00e9el : '+(tcReal>=0?'+':'')+tcReal+' (RC '+(rc>=0?'+':'')+rc+' \u00f7 ~'+decksRem.toFixed(1).replace('.',',')+' jeux)'); }
+      askEl.style.display='none'; askEl.innerHTML='';
       var good=rcOk&&tcOk;
       showBanner(good,good?'Bon compte':'Compte \u00e0 revoir',lines.join(' \u00b7 '),isFinal?'Voir le bilan':'Continuer',
-        function(){ if(isFinal) countResults(); else countPlay(); });
+        function(){ setCardsHidden(false); if(isFinal) countResults(); else countPlay(); });
     };
   }
   function countResults(){
-    stopT(); askEl.style.display='none'; hideBanner();
+    stopT(); askEl.style.display='none'; askEl.innerHTML=''; hideBanner();
     function row(lab,arr){ if(!arr[1])return''; var p=Math.round(100*arr[0]/arr[1]);
       return '<div class="barrow"><div class="bl">'+lab+'</div><div class="bt"><i style="width:'+p+'%"></i></div><div class="bn">'+arr[0]+'/'+arr[1]+'</div></div>'; }
     var tot=CT.checks.rc[0]+CT.checks.tc[0], den=CT.checks.rc[1]+CT.checks.tc[1];

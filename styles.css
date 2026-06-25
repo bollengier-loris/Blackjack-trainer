@@ -13,11 +13,14 @@
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%}
+#app,button,input,.act,.tile,.actionbar,.table{touch-action:manipulation}
+html,body{margin:0;height:100%;background:var(--felt-0)}
 body{
   font-family:var(--font); color:var(--cream);
-  background:
-    radial-gradient(120% 90% at 50% 0%, var(--felt-1) 0%, #0a3526 45%, var(--felt-0) 100%) fixed;
+  background-color:var(--felt-0);
+  background-image:
+    radial-gradient(120% 90% at 50% 0%, var(--felt-1) 0%, #0a3526 45%, var(--felt-0) 100%);
+  background-attachment:fixed; background-repeat:no-repeat; background-size:cover;
   -webkit-font-smoothing:antialiased; overscroll-behavior:none;
   user-select:none; -webkit-user-select:none;
 }
@@ -110,6 +113,8 @@ h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.01em}
 .card.back *{display:none}
 .card.mini{width:clamp(26px,8vw,34px);border-radius:5px;padding:3px}
 .card.mini .c-mid{font-size:14px}.card.mini .c-s{display:none}.card.mini .br{display:none}
+.card.cnt{width:clamp(40px,11vw,56px);border-radius:7px;padding:4px}
+.card.cnt .c-mid{font-size:clamp(17px,5.5vw,24px)}.card.cnt .br{display:none}
 .card.deal{animation:deal .26s ease}
 @keyframes deal{from{opacity:0;transform:translateY(-14px) scale(.9)}to{opacity:1;transform:none}}
 .card.flash-good{animation:fg .5s ease}.card.flash-bad{animation:fb .5s ease}
@@ -122,7 +127,7 @@ h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.01em}
 .seat.you .stag{color:var(--brass-soft)}
 .seat.active{outline:2px solid var(--brass);outline-offset:4px;border-radius:10px}
 .stag{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.minihand{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;max-width:120px}
+.minihand{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:200px}
 .seat .res{font-size:10px;font-weight:800;padding:1px 6px;border-radius:6px}
 .res.win{background:rgba(70,192,106,.2);color:var(--good)}
 .res.lose{background:rgba(226,86,78,.18);color:var(--bad)}
@@ -151,13 +156,16 @@ h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.01em}
   background:rgba(255,255,255,.16);color:#fff;cursor:pointer}
 
 /* question count overlay */
-.ask{position:fixed;inset:0;background:rgba(4,18,13,.86);z-index:50;display:flex;flex-direction:column;
+.ask{position:fixed;inset:0;background:var(--felt-0);z-index:50;display:flex;flex-direction:column;
   justify-content:center;padding:24px;max-width:760px;margin:0 auto}
 .ask h3{font-size:20px;text-align:center;margin-bottom:4px}
 .ask p{text-align:center;color:var(--muted);font-size:13px;margin:0 0 20px}
-.countin{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
-.countin label{font-size:12px;color:var(--muted);width:64px;text-align:right}
-.countin .stepper .v{min-width:64px}
+.countin{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px}
+.countin label{font-size:13px;color:var(--muted);width:72px;text-align:right}
+.cstep{appearance:none;border:1px solid var(--panel-line);background:rgba(255,255,255,.05);color:var(--cream);width:50px;height:54px;border-radius:12px;font-size:26px;cursor:pointer}
+.cstep:active{transform:scale(.95)}
+.cnum{width:100px;height:54px;border:1px solid var(--brass);border-radius:12px;background:rgba(201,162,75,.08);color:var(--cream);font-family:var(--mono);font-weight:700;font-size:28px;text-align:center;-moz-appearance:textfield}
+.cnum::-webkit-outer-spin-button,.cnum::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
 /* resultats */
 .score-hero{text-align:center;padding:18px 0 8px}
