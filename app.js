@@ -286,7 +286,10 @@
   function togglePause(){
     CT.paused=!CT.paused;
     var pb=$('#pause'), rb=$('#resume'); if(pb)pb.style.display=CT.paused?'none':''; if(rb)rb.style.display=CT.paused?'':'none';
-    if(!CT.paused) countPlay();
+    if(!CT.paused){
+      if(CT.pendingAsk){ var p=CT.pendingAsk; CT.pendingAsk=null; countAsk(false,p.rc,p.cardsLeft); }
+      else countPlay();
+    }
   }
   function countPlay(){
     if(CT.paused) return;
@@ -302,13 +305,14 @@
       if(box) box.insertAdjacentHTML('beforeend',cardHTML(e.card,{cnt:true,deal:true}));
       CT.shown++; var tr=document.querySelector('#tray'); if(tr) tr.style.width=(100*CT.shown/CT.total)+'%';
       CT.timer=setTimeout(countPlay,settings.count.speedMs);
-    } else { // round end
+    } else { // fin de manche : on laisse les cartes visibles un instant
       var rn2=$('#rno'); if(rn2)rn2.textContent=e.round;
       var c=settings.count, ask=false;
       if(c.cadence==='each') ask=true;
       else if(c.cadence==='everyN') ask=(e.round%c.everyN===0);
-      if(ask) countAsk(false,e.rc,e.cardsLeft);
-      else CT.timer=setTimeout(countPlay,Math.max(250,settings.count.speedMs));
+      var pause=Math.max(900,settings.count.speedMs+400);
+      if(ask) CT.timer=setTimeout(function(){ if(CT.paused){ CT.pendingAsk=e; return; } countAsk(false,e.rc,e.cardsLeft); },pause);
+      else CT.timer=setTimeout(countPlay,pause);
     }
   }
   function setCardsHidden(h){ var z=document.querySelector('#cardszone'); if(z) z.style.visibility=h?'hidden':'visible'; }

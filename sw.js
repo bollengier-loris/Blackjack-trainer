@@ -1,6 +1,6 @@
 /* Service worker — réseau d'abord pour le HTML, "stale-while-revalidate" pour le reste.
    Permet aux mises à jour de se propager automatiquement en ligne, tout en gardant le hors-ligne. */
-var CACHE = 'bjtrainer-v5';
+var CACHE = 'bjtrainer-v6';
 var ASSETS = ['./','./index.html','./styles.css','./strategy.js','./app.js',
   './manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 
