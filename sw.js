@@ -1,5 +1,5 @@
 /* Service worker — cache hors-ligne simple (cache-first) */
-var CACHE = 'bjtrainer-v3';
+var CACHE = 'bjtrainer-v1';
 var ASSETS = ['./','./index.html','./styles.css','./strategy.js','./app.js',
   './manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
 self.addEventListener('install', function (e) {
