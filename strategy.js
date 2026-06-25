@@ -212,7 +212,10 @@
     var initial = cards.length === 2 && opts.isInitial !== false;
     var surrAllowed = opts.surrenderAllowed !== false;
     var dk = dealerKey(dealerUp);
-    if (initial && surrAllowed && surrenderApplies(cards, dk)) return '(early surrender)';
+    if (initial && surrAllowed && surrenderApplies(cards, dk)) {
+      var fb = getCorrectAction(cards, dealerUp, { das: das, surrenderAllowed: false });
+      return '(early surrender, sinon ' + LABELS_FR[fb] + ')';
+    }
     if (initial && isPair(cards)) {
       var pk = rankEquiv(cards[0]), cell = PAIRS[pk][col(dk)];
       if (cell === 'D') return das ? '(si DAS)' : '(Split si DAS)';
