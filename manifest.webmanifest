@@ -1,0 +1,17 @@
+{
+  "name": "BJ Trainer ENHC",
+  "short_name": "BJ Trainer",
+  "description": "Entraîneur de Blackjack — stratégie de base ENHC et comptage Hi-Lo.",
+  "lang": "fr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#072a1f",
+  "theme_color": "#072a1f",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
